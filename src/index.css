@@ -21,7 +21,7 @@
     @apply text-brand-red text-sm font-bold uppercase tracking-widest;
   }
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200;
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300;
   }
   .input-field {
     @apply w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2

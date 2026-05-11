@@ -157,12 +157,20 @@ export default function Home() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {SERVICES.map(({ icon: Icon, title, desc }, i) => (
-              <div key={title} className="card group cursor-default reveal" style={{ transitionDelay: `${i * 0.12}s` }}>
-                <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-red transition-colors duration-200">
-                  <Icon className="w-6 h-6 text-brand-red group-hover:text-white transition-colors duration-200" />
+              <div
+                key={title}
+                className="card group cursor-pointer reveal hover:-translate-y-2 hover:shadow-xl hover:shadow-brand-red/15 hover:border-brand-red/30"
+                style={{ transitionDelay: `${i * 0.12}s` }}
+                onClick={() => { setForm(f => ({ ...f, service: title })); scrollTo('booking') }}
+              >
+                <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-red transition-colors duration-300">
+                  <Icon className="w-6 h-6 text-brand-red group-hover:text-white transition-colors duration-300" />
                 </div>
                 <h3 className="font-display font-bold text-brand-dark text-lg mb-2 tracking-wide">{title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                <p className="mt-4 text-brand-red text-sm font-semibold flex items-center gap-1 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  Book Now <ArrowRight className="w-3.5 h-3.5" />
+                </p>
               </div>
             ))}
           </div>
@@ -245,7 +253,7 @@ export default function Home() {
               <div className="space-y-5">
                 {[
                   { icon: Phone, label: 'Call Us',      val: '(702) 555-0458' },
-                  { icon: Mail,  label: 'Email Us',     val: 'info@shieldpestcontrol.com' },
+                  { icon: Mail,  label: 'Email Us',     val: 'demo@shieldpestlv.com' },
                   { icon: MapPin,label: 'Service Area', val: 'Las Vegas, Henderson & Valley' },
                   { icon: Clock, label: 'Hours',        val: 'Mon–Sat 7am–7pm' },
                 ].map(({ icon: Icon, label, val }) => (
@@ -345,7 +353,7 @@ export default function Home() {
               <h4 className="text-white font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-brand-red" /> (702) 555-0458</li>
-                <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-brand-red" /> info@shieldpestcontrol.com</li>
+                <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-brand-red" /> demo@shieldpestlv.com</li>
                 <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-brand-red" /> Mon–Sat 7am–7pm</li>
               </ul>
             </div>
