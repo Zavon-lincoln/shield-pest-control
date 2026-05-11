@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Dark rounded tile background -->
+  <rect width="32" height="32" rx="7" fill="#1A1A2E"/>
+  <!-- Shield body in brand-red -->
+  <path d="M16 4L27 8.5V18C27 24 22.5 28 16 30.5C9.5 28 5 24 5 18V8.5L16 4Z" fill="#E63946"/>
+  <!-- Inner shield highlight -->
+  <path d="M16 6.5L24.5 10.5V18C24.5 22.5 21 26 16 28C11 26 7.5 22.5 7.5 18V10.5L16 6.5Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.75"/>
+  <!-- Checkmark — conveys protection/guarantee -->
+  <path d="M11.5 16.5L14.5 20L20.5 13" stroke="#F1FAEE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

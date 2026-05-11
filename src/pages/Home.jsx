@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Menu, X, Phone, Star, CheckCircle, Shield, Bug, Home as HomeIcon, Rat, Zap, Mail, MapPin, Clock, Send, Loader2, ArrowRight } from 'lucide-react'
 import { saveLead } from '../utils/storage'
 import { sendConfirmationEmail, sendOwnerNotification } from '../utils/email'
@@ -23,6 +23,39 @@ export default function Home() {
   const [form, setForm] = useState({ name:'', phone:'', email:'', service:'', preferredDate:'', preferredTime:'', notes:'' })
   const [status, setStatus] = useState('idle')
 
+  const statsRef = useRef(null)
+  const statsStarted = useRef(false)
+  const [statVals, setStatVals] = useState({ years: 0, homes: 0, guarantee: 0 })
+
+  useEffect(() => {
+    // Scroll-reveal for all below-fold sections
+    const revealObs = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in-view'); revealObs.unobserve(e.target) }
+      }),
+      { threshold: 0.1 }
+    )
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el))
+
+    // Count-up for hero stats
+    const statsObs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !statsStarted.current) {
+        statsStarted.current = true
+        const steps = 80
+        let i = 0
+        const t = setInterval(() => {
+          i++
+          const p = 1 - Math.pow(1 - i / steps, 3)
+          setStatVals({ years: Math.round(8 * p), homes: Math.round(1200 * p), guarantee: Math.round(100 * p) })
+          if (i >= steps) clearInterval(t)
+        }, 1800 / steps)
+      }
+    }, { threshold: 0.3 })
+    if (statsRef.current) statsObs.observe(statsRef.current)
+
+    return () => { revealObs.disconnect(); statsObs.disconnect() }
+  }, [])
+
   function scrollTo(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     setMenuOpen(false)
@@ -42,7 +75,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/95 backdrop-blur-md shadow-lg">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/95 backdrop-blur-md shadow-lg anim-slide-down">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
@@ -82,16 +115,16 @@ export default function Home() {
       <section className="bg-brand-dark pt-16 min-h-screen flex items-center relative overflow-hidden">
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(230,57,70,0.08) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-brand-red/20 text-red-300 text-sm font-semibold px-4 py-2 rounded-full mb-6 border border-brand-red/30">
-            <Shield className="w-4 h-4" /> Licensed & Guaranteed Pest Control
+          <div className="inline-flex items-center gap-2 bg-brand-red/20 text-red-300 text-sm font-semibold px-4 py-2 rounded-full mb-6 border border-brand-red/30 anim-fade-in delay-1">
+            <Shield className="w-4 h-4 anim-float" /> Licensed & Guaranteed Pest Control
           </div>
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-wide">
+          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-wide anim-fade-up delay-2">
             PROTECT YOUR HOME.<br /><span className="text-brand-red">ELIMINATE PESTS.</span>
           </h1>
-          <p className="text-gray-300 text-lg sm:text-xl max-w-2xl mx-auto mb-10">
+          <p className="text-gray-300 text-lg sm:text-xl max-w-2xl mx-auto mb-10 anim-fade-up delay-3">
             Las Vegas's toughest pest control company. Scorpions, termites, rodents — we handle it all with guaranteed results and EPA-safe treatments.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 anim-fade-up delay-4">
             <button onClick={() => scrollTo('booking')} className="btn-primary text-base px-8 py-4">
               Book Free Inspection <ArrowRight className="w-5 h-5" />
             </button>
@@ -99,8 +132,12 @@ export default function Home() {
               <Phone className="w-5 h-5" /> (702) 555-0458
             </a>
           </div>
-          <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto sm:max-w-md">
-            {[['8+','Years Protecting Homes'],['1,200+','Homes Treated'],['100%','Satisfaction Guarantee']].map(([n,l]) => (
+          <div ref={statsRef} className="grid grid-cols-3 gap-4 max-w-sm mx-auto sm:max-w-md anim-fade-up delay-5">
+            {[
+              [`${statVals.years}+`,             'Years Protecting Homes'],
+              [`${statVals.homes.toLocaleString()}+`, 'Homes Treated'],
+              [`${statVals.guarantee}%`,          'Satisfaction Guarantee'],
+            ].map(([n,l]) => (
               <div key={l} className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20">
                 <p className="text-brand-red font-bold font-display text-2xl">{n}</p>
                 <p className="text-gray-300 text-xs mt-1">{l}</p>
@@ -113,14 +150,14 @@ export default function Home() {
       {/* SERVICES */}
       <section id="services" className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 reveal">
             <p className="section-label mb-3">Our Services</p>
             <h2 className="font-display text-4xl font-bold text-brand-dark tracking-wide">Complete Pest Elimination</h2>
             <p className="text-gray-500 mt-4 max-w-xl mx-auto">Targeted treatments for every pest problem Las Vegas homes face.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SERVICES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="card group cursor-default">
+            {SERVICES.map(({ icon: Icon, title, desc }, i) => (
+              <div key={title} className="card group cursor-default reveal" style={{ transitionDelay: `${i * 0.12}s` }}>
                 <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-red transition-colors duration-200">
                   <Icon className="w-6 h-6 text-brand-red group-hover:text-white transition-colors duration-200" />
                 </div>
@@ -136,7 +173,7 @@ export default function Home() {
       <section id="about" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
+            <div className="reveal">
               <p className="section-label mb-3">Why Shield</p>
               <h2 className="font-display text-4xl font-bold text-brand-dark mb-6 tracking-wide">Las Vegas Pest Experts You Can Count On</h2>
               <p className="text-gray-600 leading-relaxed mb-8">
@@ -157,8 +194,8 @@ export default function Home() {
                 { label: 'Desert Specialists',     desc: 'Experts in the specific pests that thrive in Nevada\'s Mojave Desert climate' },
                 { label: 'Guaranteed Results',     desc: 'If pests return within 30 days we come back and re-treat at no charge' },
                 { label: 'Fast Response',          desc: 'Same-day appointments for urgent pest problems — we prioritize your safety' },
-              ].map(f => (
-                <div key={f.label} className="bg-brand-dark rounded-2xl p-5 text-white">
+              ].map((f, i) => (
+                <div key={f.label} className="bg-brand-dark rounded-2xl p-5 text-white reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
                   <h4 className="font-display font-bold text-brand-red mb-2 tracking-wide">{f.label}</h4>
                   <p className="text-gray-300 text-sm leading-relaxed">{f.desc}</p>
                 </div>
@@ -171,13 +208,13 @@ export default function Home() {
       {/* REVIEWS */}
       <section id="reviews" className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 reveal">
             <p className="section-label mb-3">Customer Reviews</p>
             <h2 className="font-display text-4xl font-bold text-brand-dark tracking-wide">Trusted by Las Vegas Families</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {REVIEWS.map(r => (
-              <div key={r.name} className="card">
+            {REVIEWS.map((r, i) => (
+              <div key={r.name} className="card reveal" style={{ transitionDelay: `${i * 0.15}s` }}>
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: r.stars }).map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
                 </div>
@@ -201,7 +238,7 @@ export default function Home() {
       <section id="booking" className="py-24 bg-brand-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-5 gap-12">
-            <div className="lg:col-span-2 text-white">
+            <div className="lg:col-span-2 text-white reveal">
               <p className="section-label mb-3">Book a Service</p>
               <h2 className="font-display text-4xl font-bold mb-6 tracking-wide">Schedule Your Free Inspection</h2>
               <p className="text-gray-300 leading-relaxed mb-10">No obligation. One of our technicians will inspect your property and provide a custom treatment plan and quote.</p>
@@ -224,7 +261,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 reveal" style={{ transitionDelay: '0.18s' }}>
               {status === 'success' ? (
                 <div className="bg-white rounded-2xl p-10 text-center">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
