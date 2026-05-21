@@ -2,6 +2,300 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   LAYER 1 — Primitive Tokens (raw values, no meaning)
+   ============================================================ */
+:root {
+  /* Neutrals */
+  --grey-0:    #FFFFFF;
+  --grey-50:   #F8F9FA;
+  --grey-100:  #F1F3F5;
+  --grey-200:  #E9ECEF;
+  --grey-400:  #ADB5BD;
+  --grey-600:  #6C757D;
+  --grey-800:  #343A40;
+  --grey-950:  #0D0F10;
+
+  /* Status — fixed across all verticals */
+  --status-success: #16A34A;
+  --status-warning: #D97706;
+  --status-error:   #DC2626;
+  --status-info:    #2563EB;
+  --status-pending: #9333EA;
+
+  /* Brand — Shield Pest Control
+     These two vars are the ONLY ones an admin overrides at runtime.
+     All other brand references inherit from here. */
+  --brand-500: #1A6B3C;
+  --brand-600: #0F4526;
+  --brand-400: #74C69D;
+  --brand-100: #D8F3DC;
+
+  /* Brand font & radius */
+  --brand-font-heading: 'Raleway', 'Inter', system-ui, sans-serif;
+  --brand-font-body:    'Inter', system-ui, sans-serif;
+  --brand-radius: 8px;
+
+  /* ============================================================
+     LAYER 2 — Semantic Tokens (mode-aware, brand-aware)
+     ============================================================ */
+
+  /* Surfaces */
+  --surface-page:   var(--grey-50);
+  --surface-card:   var(--grey-0);
+  --surface-raised: var(--grey-0);
+  --surface-subtle: var(--grey-100);
+
+  /* Text */
+  --text-primary:   var(--grey-950);
+  --text-secondary: var(--grey-600);
+  --text-disabled:  var(--grey-400);
+  --text-on-brand:  var(--grey-0);
+
+  /* Actions */
+  --action-primary:       var(--brand-500);
+  --action-primary-hover: var(--brand-600);
+  --action-primary-text:  var(--text-on-brand);
+
+  /* Borders */
+  --border-default: var(--grey-200);
+  --border-strong:  var(--grey-400);
+  --border-focus:   var(--brand-500);
+
+  /* ============================================================
+     LAYER 3 — Component Tokens
+     ============================================================ */
+
+  /* Buttons */
+  --btn-primary-bg:       var(--action-primary);
+  --btn-primary-text:     var(--action-primary-text);
+  --btn-primary-hover-bg: var(--action-primary-hover);
+
+  /* Cards */
+  --card-bg:     var(--surface-card);
+  --card-border: var(--border-default);
+  --card-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+
+  /* Status badges — semantic, never change with branding */
+  --badge-lead-bg:         #FEF9C3; --badge-lead-text:         #854D0E;
+  --badge-active-bg:       #DCFCE7; --badge-active-text:       #166534;
+  --badge-pending-bg:      #FEF3C7; --badge-pending-text:      #92400E;
+  --badge-confirmed-bg:    #DCFCE7; --badge-confirmed-text:    #166534;
+  --badge-completed-bg:    #DBEAFE; --badge-completed-text:    #1E40AF;
+  --badge-cancelled-bg:    #FEE2E2; --badge-cancelled-text:    #991B1B;
+  --badge-inactive-bg:     #F3F4F6; --badge-inactive-text:     #374151;
+  --badge-new-bg:          #DBEAFE; --badge-new-text:          #1E40AF;
+  --badge-contacted-bg:    #EDE9FE; --badge-contacted-text:    #5B21B6;
+  --badge-quoted-bg:       #FEF3C7; --badge-quoted-text:       #92400E;
+  --badge-booked-bg:       #DCFCE7; --badge-booked-text:       #166534;
+
+  /* Typography scale */
+  --type-display:    clamp(36px, 5vw, 56px);
+  --type-heading-xl: 32px;
+  --type-heading-lg: 24px;
+  --type-heading-md: 20px;
+  --type-body-lg:    18px;
+  --type-body-md:    16px;
+  --type-body-sm:    14px;
+  --type-label:      12px;
+
+  /* Spacing — base unit 8px */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Motion */
+  --duration-fast:     100ms;
+  --duration-base:     200ms;
+  --duration-moderate: 250ms;
+  --duration-slow:     350ms;
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit:  cubic-bezier(0.4, 0, 1, 1);
+
+  /* Brand-aware box shadows (reference --brand-500 rgb channels) */
+  --shadow-brand-sm: 0 4px 15px rgba(26, 107, 60, 0.25);
+  --shadow-brand-lg: 0 8px 35px rgba(26, 107, 60, 0.5), 0 0 0 3px rgba(26, 107, 60, 0.12);
+}
+
+/* ============================================================
+   Reduced Motion — accessibility requirement
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    animation-duration:  0ms !important;
+  }
+}
+
+/* ============================================================
+   STATUS PILL — Appointment Status Pill component
+   Uses semantic badge tokens only, never brand colors.
+   ============================================================ */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--type-label);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.status-pill--new       { background: var(--badge-new-bg);       color: var(--badge-new-text); }
+.status-pill--contacted { background: var(--badge-contacted-bg); color: var(--badge-contacted-text); }
+.status-pill--booked    { background: var(--badge-booked-bg);    color: var(--badge-booked-text); }
+.status-pill--completed { background: var(--badge-completed-bg); color: var(--badge-completed-text); }
+.status-pill--cancelled { background: var(--badge-cancelled-bg); color: var(--badge-cancelled-text); }
+.status-pill--lead      { background: var(--badge-lead-bg);      color: var(--badge-lead-text); }
+.status-pill--active    { background: var(--badge-active-bg);    color: var(--badge-active-text); }
+.status-pill--inactive  { background: var(--badge-inactive-bg);  color: var(--badge-inactive-text); }
+
+/* ============================================================
+   TRUST BADGE — license, certifications, years in business
+   ============================================================ */
+.trust-strip {
+  background: var(--brand-600);
+  padding: var(--space-4) var(--space-6);
+}
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-on-brand);
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+}
+
+/* ============================================================
+   EMERGENCY CTA — fixed phone button on mobile
+   Red background, always visible, min 48×48 touch target
+   ============================================================ */
+.emergency-cta {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  background: var(--status-error);
+  color: var(--grey-0);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: 9999px;
+  font-size: var(--type-body-sm);
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
+  text-decoration: none;
+  z-index: 100;
+  min-height: 48px;
+  transition: transform var(--duration-base) var(--ease-enter),
+              box-shadow var(--duration-base) var(--ease-enter);
+}
+.emergency-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.5);
+}
+@media (min-width: 768px) {
+  .emergency-cta { display: none; }
+}
+
+/* ============================================================
+   DELETE CONFIRMATION MODAL
+   ============================================================ */
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: var(--space-4);
+}
+.confirm-modal {
+  background: var(--surface-card);
+  border-radius: var(--brand-radius);
+  padding: var(--space-8);
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--grey-800);
+  color: var(--grey-0);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--brand-radius);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  z-index: 300;
+  animation: fade-in var(--duration-base) var(--ease-enter);
+  min-width: 240px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+.toast--success { background: var(--status-success); }
+.toast--error   { background: var(--status-error); }
+
+/* ============================================================
+   LOADING SPINNER
+   ============================================================ */
+.spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--brand-100);
+  border-top-color: var(--brand-500);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.spinner--sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   SERVICE CARD — full-card tap target (used in public site)
+   ============================================================ */
+.service-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--brand-radius);
+  padding: var(--space-6);
+  cursor: pointer;
+  transition: box-shadow var(--duration-base) var(--ease-enter),
+              transform var(--duration-base) var(--ease-enter),
+              border-color var(--duration-base);
+  display: flex;
+  flex-direction: column;
+}
+.service-card:hover {
+  box-shadow: 0 8px 24px rgba(26, 107, 60, 0.15);
+  transform: translateY(-4px);
+  border-color: var(--brand-500);
+}
+
+/* ============================================================
+   Tailwind component extensions
+   ============================================================ */
 @layer base {
   html { scroll-behavior: smooth; }
   body { @apply bg-white text-gray-900 font-sans antialiased; }
@@ -9,65 +303,47 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-red text-white font-semibold px-6 py-3 rounded-lg
-           hover:bg-red-700 transition-all duration-300 shadow-lg
-           hover:-translate-y-1 inline-flex items-center gap-2;
+    @apply bg-brand-green text-white font-semibold px-6 py-3 rounded-lg
+           hover:bg-green-800 transition-all duration-200 shadow-lg
+           hover:shadow-green-500/20 hover:-translate-y-0.5 inline-flex items-center gap-2;
   }
   .btn-outline {
-    @apply border-2 border-white text-white font-semibold px-6 py-3 rounded-lg
-           hover:bg-white hover:text-brand-dark transition-all duration-200 inline-flex items-center gap-2;
+    @apply border-2 border-brand-green text-brand-green font-semibold px-6 py-3 rounded-lg
+           hover:bg-brand-green hover:text-white transition-all duration-200 inline-flex items-center gap-2;
   }
   .section-label {
-    @apply text-brand-red text-sm font-bold uppercase tracking-widest;
+    @apply text-brand-light text-sm font-bold uppercase tracking-widest;
   }
   .card {
     @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300;
   }
   .input-field {
     @apply w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2
-           focus:ring-brand-red focus:border-transparent transition-all duration-200 bg-gray-50 text-gray-900;
+           focus:ring-brand-green focus:border-transparent transition-all duration-200 bg-gray-50 text-gray-900;
   }
 }
 
-/* ── Custom keyframes ── */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes slide-down {
-  from { opacity: 0; transform: translateY(-20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-7px); }
-}
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fade-up    { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fade-in    { from { opacity:0; } to { opacity:1; } }
+@keyframes slide-down { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes float      { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-7px); } }
 
-/* ── Load-in animation classes (hero / navbar) ── */
 .anim-fade-up    { animation: fade-up    0.65s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-fade-in    { animation: fade-in    0.5s  ease both; }
 .anim-slide-down { animation: slide-down 0.5s  cubic-bezier(0.16,1,0.3,1) both; }
 .anim-float      { animation: float 3.5s ease-in-out infinite; }
 
-/* Stagger delay helpers */
 .delay-1 { animation-delay: 0.10s; }
 .delay-2 { animation-delay: 0.22s; }
 .delay-3 { animation-delay: 0.38s; }
 .delay-4 { animation-delay: 0.54s; }
 .delay-5 { animation-delay: 0.70s; }
 
-/* ── Scroll-reveal (JS adds .in-view via IntersectionObserver) ── */
-.reveal         { opacity: 0; transform: translateY(28px); transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1); }
-.reveal.in-view { opacity: 1; transform: translateY(0); }
+.reveal         { opacity:0; transform:translateY(28px); transition:opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1); }
+.reveal.in-view { opacity:1; transform:translateY(0); }
 
-/* ── Button glow on hover — overrides @layer components ── */
-.btn-primary {
-  box-shadow: 0 4px 15px rgba(230,57,70,0.25);
-}
-.btn-primary:hover {
-  box-shadow: 0 8px 35px rgba(230,57,70,0.5), 0 0 0 3px rgba(230,57,70,0.12);
-}
+.btn-primary { box-shadow: var(--shadow-brand-sm); }
+.btn-primary:hover { box-shadow: var(--shadow-brand-lg); transform: translateY(-3px); }

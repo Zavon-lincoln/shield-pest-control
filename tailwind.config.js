@@ -5,15 +5,15 @@ export default {
     extend: {
       colors: {
         brand: {
-          dark:  '#1A1A2E',
-          red:   '#E63946',
-          light: '#F1FAEE',
-          blue:  '#457B9D',
+          green: '#1A6B3C',
+          light: '#74C69D',
+          dark:  '#0F4526',
+          accent:'#D8F3DC',
         },
       },
       fontFamily: {
         sans:    ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Oswald', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Raleway', 'Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
