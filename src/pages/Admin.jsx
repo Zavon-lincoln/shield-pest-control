@@ -9,7 +9,7 @@ import {
 import {
   isAuthenticated, login, logout,
   getLeads, updateLeadStatus, deleteLead,
-  addLeadNote, updateLeadJobValue, markFollowUpSent,
+  addLeadNote, updateLeadJobValue, updateLeadAppointment, markFollowUpSent,
   exportLeadsCSV, getSettings, saveSettings, seedDemoData,
 } from '../utils/storage'
 import { sendFollowUpEmail, sendInviteEmail } from '../utils/email'
@@ -128,15 +128,23 @@ function ActivityIcon({ type }) {
 }
 
 /* ── Lead Detail Drawer ─────────────────────────────────────────────────── */
-function LeadDrawer({ lead, onClose, onStatusChange, onNoteAdd, onJobValueSave, onDeleteRequest }) {
+function LeadDrawer({ lead, onClose, onStatusChange, onNoteAdd, onJobValueSave, onAppointmentSave, onDeleteRequest }) {
   const [noteText, setNoteText]       = useState('')
   const [jobVal, setJobVal]           = useState(lead?.jobValue != null ? String(lead.jobValue) : '')
   const [jobEditing, setJobEditing]   = useState(false)
+  const [apptEditing, setApptEditing] = useState(false)
+  const [apptDate, setApptDate]       = useState(lead?.preferredDate || '')
+  const [apptTime, setApptTime]       = useState(lead?.preferredTime || '')
   const noteRef = useRef(null)
 
   useEffect(() => {
     setJobVal(lead?.jobValue != null ? String(lead.jobValue) : '')
   }, [lead?.jobValue])
+
+  useEffect(() => {
+    setApptDate(lead?.preferredDate || '')
+    setApptTime(lead?.preferredTime || '')
+  }, [lead?.preferredDate, lead?.preferredTime])
 
   if (!lead) return null
 
@@ -151,6 +159,11 @@ function LeadDrawer({ lead, onClose, onStatusChange, onNoteAdd, onJobValueSave, 
   function saveJobValue() {
     onJobValueSave(lead.id, jobVal)
     setJobEditing(false)
+  }
+
+  function saveAppt() {
+    onAppointmentSave(lead.id, apptDate, apptTime)
+    setApptEditing(false)
   }
 
   const log = [...(lead.activityLog || [])].reverse()
@@ -204,12 +217,41 @@ function LeadDrawer({ lead, onClose, onStatusChange, onNoteAdd, onJobValueSave, 
           </div>
 
           {/* Appointment */}
-          {(lead.preferredDate || lead.preferredTime) && (
-            <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600">
-              <p className="font-semibold text-gray-800 mb-1">Appointment</p>
-              {lead.preferredDate && <p>{fmtDate(lead.preferredDate + 'T00:00:00')}{lead.preferredTime ? ` · ${lead.preferredTime}` : ''}</p>}
-            </div>
-          )}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Appointment</p>
+            {apptEditing ? (
+              <div className="space-y-2">
+                <input
+                  type="date" value={apptDate} onChange={e => setApptDate(e.target.value)}
+                  className="input-field w-full"
+                />
+                <select value={apptTime} onChange={e => setApptTime(e.target.value)} className="input-field w-full">
+                  <option value="">No time selected</option>
+                  {ALL_TIME_SLOTS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <div className="flex gap-2">
+                  <button onClick={saveAppt}
+                    className="flex-1 px-4 py-2 bg-brand-green text-white text-sm font-semibold rounded-lg hover:bg-brand-dark transition-colors"
+                    style={{ minHeight: 44 }}>Save</button>
+                  <button onClick={() => setApptEditing(false)}
+                    className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                    style={{ minHeight: 44 }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setApptEditing(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-dashed border-gray-300
+                           rounded-xl text-sm hover:border-brand-green hover:text-brand-green transition-colors w-full text-left"
+                style={{ minHeight: 44 }}>
+                <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                <span className="text-gray-700">
+                  {lead.preferredDate
+                    ? `${fmtDate(lead.preferredDate + 'T00:00:00')}${lead.preferredTime ? ' · ' + lead.preferredTime : ''}`
+                    : 'Set appointment date & time'}
+                </span>
+              </button>
+            )}
+          </div>
 
           {/* Job Value */}
           <div>
@@ -693,6 +735,10 @@ export default function Admin() {
     setLeads(updateLeadJobValue(id, value))
   }
 
+  function handleAppointmentSave(id, date, time) {
+    setLeads(updateLeadAppointment(id, date, time))
+  }
+
   function handleDeleteConfirm() {
     if (!deleteTarget) return
     try {
@@ -895,6 +941,7 @@ export default function Admin() {
           onStatusChange={handleStatusChange}
           onNoteAdd={handleNoteAdd}
           onJobValueSave={handleJobValueSave}
+          onAppointmentSave={handleAppointmentSave}
           onDeleteRequest={setDeleteTarget}
         />
       )}
