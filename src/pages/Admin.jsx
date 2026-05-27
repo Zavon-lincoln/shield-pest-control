@@ -10,7 +10,7 @@ import {
   isAuthenticated, login, logout,
   getLeads, updateLeadStatus, deleteLead,
   addLeadNote, updateLeadJobValue, updateLeadAppointment, markFollowUpSent,
-  exportLeadsCSV, getSettings, saveSettings, seedDemoData,
+  exportLeadsCSV, getSettings, saveSettings, seedDemoData, hydrateFromSupabase,
 } from '../utils/storage'
 import { sendFollowUpEmail, sendInviteEmail } from '../utils/email'
 import { loginWithEmail, logoutTeam, getCurrentUserProfile, createInvite, getTeamMembers, removeTeamMember } from '../utils/team'
@@ -628,13 +628,18 @@ export default function Admin() {
 
   const loadLeads = useCallback(() => {
     setIsLoading(true)
-    const t = setTimeout(() => {
-      let data = getLeads()
-      if (data.length === 0) data = seedDemoData()
-      setLeads(data)
-      setIsLoading(false)
-    }, 180)
-    return () => clearTimeout(t)
+    hydrateFromSupabase()
+      .then(remote => {
+        let data = remote ?? getLeads()
+        if (data.length === 0) data = seedDemoData()
+        setLeads(data)
+      })
+      .catch(() => {
+        let data = getLeads()
+        if (data.length === 0) data = seedDemoData()
+        setLeads(data)
+      })
+      .finally(() => setIsLoading(false))
   }, [])
 
   useEffect(() => {

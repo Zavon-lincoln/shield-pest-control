@@ -1,6 +1,55 @@
-/* ── Leads ─────────────────────────────────────────────────────────────── */
-const LEADS_KEY = 'shieldpest_leads'
+import { supabase } from '../lib/supabase'
 
+const COMPANY_ID = 'shield-pest'
+const LEADS_KEY  = 'shieldpest_leads'
+
+/* ── Supabase sync helpers (fire-and-forget) ─────────────────────────────── */
+function syncLead(lead) {
+  if (!supabase) return
+  supabase
+    .from('leads')
+    .upsert({ id: lead.id, company_id: COMPANY_ID, data: lead, submitted_at: lead.submittedAt })
+    .then(() => {})
+    .catch(() => {})
+}
+
+function syncLeads(leads) {
+  if (!supabase || !leads.length) return
+  supabase
+    .from('leads')
+    .upsert(leads.map(l => ({ id: l.id, company_id: COMPANY_ID, data: l, submitted_at: l.submittedAt })))
+    .then(() => {})
+    .catch(() => {})
+}
+
+function deleteSyncLead(id) {
+  if (!supabase) return
+  supabase
+    .from('leads')
+    .delete()
+    .eq('id', id)
+    .eq('company_id', COMPANY_ID)
+    .then(() => {})
+    .catch(() => {})
+}
+
+/* ── Hydrate from Supabase (called once on admin mount) ──────────────────── */
+export async function hydrateFromSupabase() {
+  if (!supabase) return null
+  try {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('data')
+      .eq('company_id', COMPANY_ID)
+      .order('submitted_at', { ascending: false })
+    if (error || !data?.length) return null
+    const leads = data.map(row => row.data)
+    localStorage.setItem(LEADS_KEY, JSON.stringify(leads))
+    return leads
+  } catch { return null }
+}
+
+/* ── Leads ─────────────────────────────────────────────────────────────────── */
 export function getLeads() {
   try { return JSON.parse(localStorage.getItem(LEADS_KEY) || '[]') }
   catch { return [] }
@@ -24,6 +73,7 @@ export function saveLead(lead) {
   }
   leads.unshift(newLead)
   localStorage.setItem(LEADS_KEY, JSON.stringify(leads))
+  syncLead(newLead)
   return newLead
 }
 
@@ -39,12 +89,15 @@ export function updateLeadStatus(id, status) {
     return { ...l, status, followUpDate, followUpSent, activityLog: [...(l.activityLog || []), logEntry] }
   })
   localStorage.setItem(LEADS_KEY, JSON.stringify(updated))
+  const changed = updated.find(l => l.id === id)
+  if (changed) syncLead(changed)
   return updated
 }
 
 export function deleteLead(id) {
   const updated = getLeads().filter(l => l.id !== id)
   localStorage.setItem(LEADS_KEY, JSON.stringify(updated))
+  deleteSyncLead(id)
   return updated
 }
 
@@ -56,6 +109,8 @@ export function addLeadNote(id, text) {
     return { ...l, activityLog: [...(l.activityLog || []), entry] }
   })
   localStorage.setItem(LEADS_KEY, JSON.stringify(updated))
+  const changed = updated.find(l => l.id === id)
+  if (changed) syncLead(changed)
   return updated
 }
 
@@ -63,6 +118,8 @@ export function updateLeadJobValue(id, jobValue) {
   const leads = getLeads()
   const updated = leads.map(l => l.id === id ? { ...l, jobValue: parseFloat(jobValue) || null } : l)
   localStorage.setItem(LEADS_KEY, JSON.stringify(updated))
+  const changed = updated.find(l => l.id === id)
+  if (changed) syncLead(changed)
   return updated
 }
 
@@ -77,6 +134,8 @@ export function updateLeadAppointment(id, preferredDate, preferredTime) {
     return { ...l, preferredDate, preferredTime, activityLog: [...(l.activityLog || []), entry] }
   })
   localStorage.setItem(LEADS_KEY, JSON.stringify(updated))
+  const changed = updated.find(l => l.id === id)
+  if (changed) syncLead(changed)
   return updated
 }
 
@@ -88,6 +147,8 @@ export function markFollowUpSent(id) {
     return { ...l, followUpSent: true, activityLog: [...(l.activityLog || []), entry] }
   })
   localStorage.setItem(LEADS_KEY, JSON.stringify(updated))
+  const changed = updated.find(l => l.id === id)
+  if (changed) syncLead(changed)
   return updated
 }
 
@@ -116,7 +177,7 @@ export function exportLeadsCSV() {
   URL.revokeObjectURL(url)
 }
 
-/* ── Settings ──────────────────────────────────────────────────────────── */
+/* ── Settings ──────────────────────────────────────────────────────────────── */
 const SETTINGS_KEY = 'shieldpest_settings'
 
 const DEFAULT_SETTINGS = {
@@ -137,10 +198,17 @@ export function getSettings() {
 
 export function saveSettings(settings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  if (supabase) {
+    supabase
+      .from('settings')
+      .upsert({ company_id: COMPANY_ID, data: settings })
+      .then(() => {})
+      .catch(() => {})
+  }
   return settings
 }
 
-/* ── Seed demo data ────────────────────────────────────────────────────── */
+/* ── Seed demo data ────────────────────────────────────────────────────────── */
 export function seedDemoData() {
   const now = new Date()
   const d = (offset) => {
@@ -283,10 +351,11 @@ export function seedDemoData() {
   }))
 
   localStorage.setItem(LEADS_KEY, JSON.stringify(seeded))
+  syncLeads(seeded)
   return seeded
 }
 
-/* ── Auth ──────────────────────────────────────────────────────────────── */
+/* ── Auth ──────────────────────────────────────────────────────────────────── */
 const AUTH_KEY = 'shieldpest_auth'
 
 export function login(password) {
